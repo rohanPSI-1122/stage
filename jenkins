@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+    
+    // Define tools to be installed
+    tools {
+        // Define Maven tool installation
+        maven 'Maven'
+    }
+
+    stages {
+        stage('Git Clone') {
+            steps {
+                // Get code from a GitHub repository
+                git branch: 'main', url: 'https://github.com/rohanPSI-1122/stage.git'
+            }
+        }
+        
+        stage('Maven Build') {
+            steps {
+                script {
+                    // Build Maven Code
+                    sh "mvn clean install"
+                }
+            }
+        }
+    stages {
+        stage('Upload to Artifactory') {
+            steps {
+                script {
+                    def server = Artifactory.newServer url: 'http://172.16.7.110:8082/artifactory/Russia/', credentialsId: 'jfrog-connection'
+                    
+                    def uploadSpec = """{
+                        "files": [
+                            {
+                                "pattern": "module-a/target/*.jar",
+                                "pattern": "module-b/target/*.jar",
+                                "target": "Russia/"
+                            }
+                        ]
+                    }"""
+                    
+                    server.upload(uploadSpec)
+                }
+            }
+        }
+    }
+}
