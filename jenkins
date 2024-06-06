@@ -23,7 +23,7 @@ pipeline {
                 }
             }
         }
-    stages {
+        
         stage('Upload to Artifactory') {
             steps {
                 script {
@@ -33,6 +33,9 @@ pipeline {
                         "files": [
                             {
                                 "pattern": "module-a/target/*.jar",
+                                "target": "Russia/"
+                            },
+                            {
                                 "pattern": "module-b/target/*.jar",
                                 "target": "Russia/"
                             }
@@ -44,5 +47,4 @@ pipeline {
             }
         }
     }
-}
 }
