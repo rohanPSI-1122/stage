@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+		tools {
+			maven "Maven"
+		}
+		stages {
+				stage('Git Clone') {
+				steps {
+					// Get code from a GitHub repository
+					git branch: 'main', url: 'https://github.com/rohanPSI-1122/stage.git'
+					}
+				}
+				stage('Maven Build') {
+				steps {
+					script {
+					// Build Maven Code
+					sh "mvn clean install"
+						}
+					}
+				}
+				
+				stage('Set Quality Gate') {
+            steps {
+                sh 'curl -u "admin:1234" -X POST "http://172.16.7.110:9000/api/qualitygates/select?projectKey=england&gateId=AY_hp2jvTtRvALw-a4Ok"'
+            }
+        }
+				
+				
+				
+				stage('Sonar Scan') {
+					steps {
+						script {
+						withSonarQubeEnv(credentialsId: 'england') {
+						sh 'mvn sonar:sonar -Dsonar.projectName=england -Dsonar.projectKey=england'
+								}
+							}
+						}
+					}
+				stage('Quality Gate Check') {
+				    steps {
+						timeout(time: 1, unit: 'HOURS') {
+							waitForQualityGate abortPipeline: true
+							}
+						}
+				}
+		    }
+}
